@@ -15,7 +15,7 @@ INSERT INTO employee_dim (
     tenure_band
 )
 SELECT
-    TO_CHAR(ORA_HASH(employee_id || first_name || last_name || hire_date || job_id || salary || email || phone_number || manager_id || department_id)),
+    ORA_HASH(employee_id || first_name || last_name || hire_date || job_id || salary || email || phone_number || manager_id || department_id),
     employee_id,
     first_name || ' ' || last_name,
     hire_date,
@@ -44,7 +44,7 @@ INSERT INTO department_dim (
     manager_id
 )
 SELECT
-    TO_CHAR(ORA_HASH(department_id || department_name || location_id || manager_id)),
+    ORA_HASH(department_id || department_name || location_id || manager_id),
     department_id,
     department_name,
     location_id,
@@ -61,7 +61,7 @@ INSERT INTO job_dim (
     job_category
 )
 SELECT
-    TO_CHAR(ORA_HASH(job_id || job_title || min_salary || max_salary)),
+    ORA_HASH(job_id || job_title || min_salary || max_salary),
     job_id,
     job_title,
     min_salary,
@@ -90,7 +90,7 @@ INSERT INTO location_dim (
     region_name
 )
 SELECT
-    TO_CHAR(ORA_HASH(l.location_id || l.street_address || l.city || l.postal_code || l.country_id)),
+    ORA_HASH(l.location_id || l.street_address || l.city || l.postal_code || l.country_id),
     l.location_id,
     l.street_address,
     l.postal_code,
@@ -105,42 +105,42 @@ JOIN countries c ON l.country_id = c.country_id
 JOIN regions r ON c.region_id = r.region_id;
 
 -- === TIME_DIM ETL ===
-DECLARE 
-    v_start_date DATE := TO_DATE('01-01-1995', 'dd-MM-yyyy');  -- Start date, adjusted to cover the earliest date in the data 
-    v_end_date   DATE := TO_DATE('31-12-2024', 'dd-MM-yyyy');  -- End date, extended slightly beyond the latest date in the data 
-BEGIN 
-    FOR d IN (SELECT v_start_date + LEVEL - 1 AS current_date 
-              FROM DUAL 
-              CONNECT BY LEVEL <= (v_end_date - v_start_date + 1)) 
-    LOOP 
-        INSERT INTO Time_Dim ( 
-            surrogate_time_id, 
-            time_id, 
-            dates, 
-            year, 
-            quarter, 
-            month, 
-            week, 
-            day, 
-            day_of_week, 
-            fiscal_year, 
-            fiscal_quarter 
-        ) 
-        VALUES ( 
-            SYS_GUID(),  -- Generate a unique surrogate key 
-            TO_NUMBER(TO_CHAR(d.current_date, 'YYYYMMDD')),  -- Generate time_id in YYYYMMDD format 
-            d.current_date,  -- Date value 
-            TO_NUMBER(TO_CHAR(d.current_date, 'YYYY')),  -- Year value 
-            TO_NUMBER(TO_CHAR(d.current_date, 'Q')),  -- Quarter value 
-            TO_NUMBER(TO_CHAR(d.current_date, 'MM')),  -- Month value 
-            TO_NUMBER(TO_CHAR(d.current_date, 'IW')),  -- ISO week of year 
-            TO_NUMBER(TO_CHAR(d.current_date, 'DD')),  -- Day of the month 
-            TO_CHAR(d.current_date, 'Day', 'NLS_DATE_LANGUAGE=ENGLISH'),  -- Day of the week 
-            TO_NUMBER(TO_CHAR(d.current_date, 'YYYY')),  -- Fiscal year (assumed to align with calendar year) 
-            TO_NUMBER(TO_CHAR(d.current_date, 'Q'))  -- Fiscal quarter (assumed to align with calendar quarters) 
-        ); 
-    END LOOP; 
-  
-    COMMIT; 
-END; 
-/ 
+DECLARE
+    v_start_date DATE := TO_DATE('01-01-1995', 'dd-MM-yyyy');  -- Start date, adjusted to cover the earliest date in the data
+    v_end_date   DATE := TO_DATE('31-12-2024', 'dd-MM-yyyy');  -- End date, extended slightly beyond the latest date in the data
+BEGIN
+    FOR d IN (SELECT v_start_date + LEVEL - 1 AS current_date
+              FROM DUAL
+              CONNECT BY LEVEL <= (v_end_date - v_start_date + 1))
+    LOOP
+        INSERT INTO Time_Dim (
+            surrogate_time_id,
+            time_id,
+            dates,
+            year,
+            quarter,
+            month,
+            week,
+            day,
+            day_of_week,
+            fiscal_year,
+            fiscal_quarter
+        )
+        VALUES (
+            SYS_GUID(),  -- Generate a unique surrogate key
+            TO_NUMBER(TO_CHAR(d.current_date, 'YYYYMMDD')),  -- Generate time_id in YYYYMMDD format
+            d.current_date,  -- Date value
+            TO_NUMBER(TO_CHAR(d.current_date, 'YYYY')),  -- Year value
+            TO_NUMBER(TO_CHAR(d.current_date, 'Q')),  -- Quarter value
+            TO_NUMBER(TO_CHAR(d.current_date, 'MM')),  -- Month value
+            TO_NUMBER(TO_CHAR(d.current_date, 'IW')),  -- ISO week of year
+            TO_NUMBER(TO_CHAR(d.current_date, 'DD')),  -- Day of the month
+            TO_CHAR(d.current_date, 'Day', 'NLS_DATE_LANGUAGE=ENGLISH'),  -- Day of the week
+            TO_NUMBER(TO_CHAR(d.current_date, 'YYYY')),  -- Fiscal year (assumed to align with calendar year)
+            TO_NUMBER(TO_CHAR(d.current_date, 'Q'))  -- Fiscal quarter (assumed to align with calendar quarters)
+        );
+    END LOOP;
+
+    COMMIT;
+END;
+/

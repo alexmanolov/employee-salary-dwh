@@ -1,7 +1,7 @@
 
 -- EMPLOYEE_DIM
 CREATE TABLE employee_dim (
-    surrogate_employee_id VARCHAR2(32) PRIMARY KEY,
+    surrogate_employee_id NUMBER PRIMARY KEY,
     employee_id NUMBER,
     full_name VARCHAR2(100),
     hire_date DATE,
@@ -17,7 +17,7 @@ CREATE TABLE employee_dim (
 
 -- DEPARTMENT_DIM
 CREATE TABLE department_dim (
-    surrogate_department_id VARCHAR2(32) PRIMARY KEY,
+    surrogate_department_id NUMBER PRIMARY KEY,
     department_id NUMBER,
     department_name VARCHAR2(100),
     location_id NUMBER,
@@ -26,7 +26,7 @@ CREATE TABLE department_dim (
 
 -- JOB_DIM
 CREATE TABLE job_dim (
-    surrogate_job_id VARCHAR2(32) PRIMARY KEY,
+    surrogate_job_id NUMBER PRIMARY KEY,
     job_id VARCHAR2(10),
     job_title VARCHAR2(100),
     min_salary NUMBER,
@@ -36,7 +36,7 @@ CREATE TABLE job_dim (
 
 -- LOCATION_DIM
 CREATE TABLE location_dim (
-    surrogate_location_id VARCHAR2(32) PRIMARY KEY,
+    surrogate_location_id NUMBER PRIMARY KEY,
     location_id NUMBER,
     street_address VARCHAR2(100),
     postal_code VARCHAR2(20),
@@ -49,28 +49,28 @@ CREATE TABLE location_dim (
 );
 
 -- TIME_DIM
-CREATE TABLE time_dim (
-    surrogate_time_id VARCHAR2(32) PRIMARY KEY,
-    time_id NUMBER,
-    dates DATE,
-    year NUMBER,
-    quarter NUMBER,
-    month NUMBER,
-    week NUMBER,
-    day NUMBER,
-    day_of_week VARCHAR2(10),
-    fiscal_year NUMBER,
-    fiscal_quarter NUMBER
+CREATE TABLE Time_Dim (
+    surrogate_time_id   RAW(16) PRIMARY KEY,  -- Surrogate key based on hash of the row
+    time_id             NUMBER,  -- Natural key representing the date in a numeric format
+    dates                DATE,  -- The specific calendar date
+    year                NUMBER,  -- The year component of the date
+    quarter             NUMBER,  -- The quarter of the year (1 through 4)
+    month               NUMBER,  -- The month of the year (1 through 12)
+    week                NUMBER,  -- The week number of the year
+    day                 NUMBER,  -- The day of the month
+    day_of_week         VARCHAR2(10),  -- The name of the day (e.g., 'Monday')
+    fiscal_year         NUMBER,  -- The fiscal year corresponding to the date
+    fiscal_quarter      NUMBER   -- The fiscal quarter corresponding to the date
 );
 
 -- EMPLOYEE_SALARY_FACT
 CREATE TABLE employee_salary_fact (
     surrogate_fact_id VARCHAR2(32) PRIMARY KEY,
-    surrogate_employee_id VARCHAR2(32),
-    surrogate_department_id VARCHAR2(32),
-    surrogate_job_id VARCHAR2(32),
+    surrogate_employee_id NUMBER,
+    surrogate_department_id NUMBER,
+    surrogate_job_id NUMBER,
     surrogate_time_id VARCHAR2(32),
-    surrogate_location_id VARCHAR2(32),
+    surrogate_location_id NUMBER,
     salary NUMBER,
     bonus NUMBER,
     total_compensation NUMBER,
