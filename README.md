@@ -10,6 +10,32 @@ This project implements a full OLTP-to-OLAP data warehouse pipeline using the cl
 
 ---
 
+## 🧂 Prerequisites
+
+Before running the ETL pipeline:
+
+- Make sure you have access to the **Oracle HR schema**
+  - In Oracle Live SQL: `SELECT * FROM hr.employees;`
+  - Or request a DB admin to grant access to the `HR` user
+- Clone the HR schema tables into your own schema:
+
+```sql
+CREATE TABLE employees     AS SELECT * FROM hr.employees;
+CREATE TABLE departments   AS SELECT * FROM hr.departments;
+CREATE TABLE jobs          AS SELECT * FROM hr.jobs;
+CREATE TABLE job_history   AS SELECT * FROM hr.job_history;
+CREATE TABLE locations     AS SELECT * FROM hr.locations;
+CREATE TABLE countries     AS SELECT * FROM hr.countries;
+CREATE TABLE regions       AS SELECT * FROM hr.regions;
+```
+
+Once done, proceed with:
+- `02_star_schema_ddl.sql`
+- `03_star_schema_etl.sql`
+- `04_fact_table_etl.sql`
+
+---
+
 ## 🗂️ Project Structure
 
 ```plaintext
@@ -59,11 +85,7 @@ Each dimension uses surrogate keys. The `time_dim` is populated dynamically with
 
 ## ⚙️ How to Run
 
-1. Copy the Oracle HR schema tables into your own schema:
-   ```sql
-   CREATE TABLE employees AS SELECT * FROM hr.employees;
-   -- Repeat for departments, jobs, job_history, etc.
-   ```
+1. Clone the HR schema tables using `01_copy_hr_tables.sql` or the commands above.
 
 2. Run `02_star_schema_ddl.sql` to create your OLAP schema.
 
