@@ -69,7 +69,7 @@ CREATE TABLE employee_salary_fact (
     surrogate_employee_id NUMBER,
     surrogate_department_id NUMBER,
     surrogate_job_id NUMBER,
-    surrogate_time_id VARCHAR2(32),
+    surrogate_time_id RAW(16),
     surrogate_location_id NUMBER,
     salary NUMBER,
     bonus NUMBER,
