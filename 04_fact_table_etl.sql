@@ -36,6 +36,11 @@ LEFT JOIN job_dim jd ON e.job_id = jd.job_id
 LEFT JOIN departments d ON d.department_id = e.department_id
 LEFT JOIN location_dim ld ON d.location_id = ld.location_id
 LEFT JOIN time_dim td ON TO_NUMBER(TO_CHAR(e.hire_date, 'YYYYMMDD')) = td.time_id
+WHERE ed.surrogate_employee_id IS NOT NULL
+  AND dd.surrogate_department_id IS NOT NULL
+  AND jd.surrogate_job_id IS NOT NULL
+  AND td.surrogate_time_id IS NOT NULL
+  AND ld.surrogate_location_id IS NOT NULL;
 
 
 -- === 2. Historical Job Records ETL ===
@@ -70,3 +75,8 @@ LEFT JOIN job_dim jd ON jh.job_id = jd.job_id
 LEFT JOIN departments d ON d.department_id = jh.department_id
 LEFT JOIN location_dim ld ON d.location_id = ld.location_id
 LEFT JOIN time_dim td ON TO_NUMBER(TO_CHAR(jh.start_date, 'YYYYMMDD')) = td.time_id
+WHERE ed.surrogate_employee_id IS NOT NULL
+  AND dd.surrogate_department_id IS NOT NULL
+  AND jd.surrogate_job_id IS NOT NULL
+  AND td.surrogate_time_id IS NOT NULL
+  AND ld.surrogate_location_id IS NOT NULL;
