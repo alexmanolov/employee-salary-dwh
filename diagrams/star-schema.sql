@@ -83,7 +83,7 @@ CREATE TABLE "employee_salary_fact" (
 
 
 ALTER TABLE "employee_salary_fact"
-ADD CONSTRAINT "fk_salary_employee" FOREIGN KEY ("surrogate_employee_id") REFERENCES "employee_dim" ("surrogate_employee_id")
+ADD CONSTRAINT "fk_employee_salary_fact_surrogate_employee_id_employee_dim" FOREIGN KEY ("surrogate_employee_id") REFERENCES "employee_dim" ("surrogate_employee_id")
 ON UPDATE NO ACTION ON DELETE NO ACTION;
 ALTER TABLE "employee_salary_fact"
 ADD CONSTRAINT "fk_salary_department" FOREIGN KEY ("surrogate_department_id") REFERENCES "department_dim" ("surrogate_department_id")

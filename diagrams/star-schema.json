@@ -739,8 +739,8 @@
       ],
       "indices": [],
       "id": 5,
-      "x": -371.0000000000001,
-      "y": 284
+      "x": -344.19808718750005,
+      "y": 285.340095640625
     }
   ],
   "relationships": [
@@ -749,10 +749,10 @@
       "startFieldId": 1,
       "endTableId": 0,
       "endFieldId": 0,
-      "cardinality": "one_to_many",
+      "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action",
-      "name": "fk_salary_employee",
+      "name": "fk_employee_salary_fact_surrogate_employee_id_employee_dim",
       "id": 0
     },
     {
@@ -760,7 +760,7 @@
       "startFieldId": 2,
       "endTableId": 1,
       "endFieldId": 0,
-      "cardinality": "one_to_many",
+      "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action",
       "name": "fk_salary_department",
@@ -771,7 +771,7 @@
       "startFieldId": 3,
       "endTableId": 2,
       "endFieldId": 0,
-      "cardinality": "one_to_many",
+      "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action",
       "name": "fk_salary_job",
@@ -782,7 +782,7 @@
       "startFieldId": 4,
       "endTableId": 4,
       "endFieldId": 0,
-      "cardinality": "one_to_many",
+      "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action",
       "name": "fk_salary_time",
@@ -793,7 +793,7 @@
       "startFieldId": 5,
       "endTableId": 3,
       "endFieldId": 0,
-      "cardinality": "one_to_many",
+      "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action",
       "name": "fk_salary_location",
