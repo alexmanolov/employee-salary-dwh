@@ -25,7 +25,7 @@ SELECT
     LOWER(email) || '@oracle.com',
     '+359-' || REPLACE(phone_number, '.', '-'),
     manager_id,
-    department_id,
+    NVL(department_id, -1),
     CASE 
         WHEN MONTHS_BETWEEN(DATE '2009-01-01', hire_date)/12 < 1 THEN 'Less than 1 year'
         WHEN MONTHS_BETWEEN(DATE '2009-01-01', hire_date)/12 BETWEEN 1 AND 3 THEN '1-3 years'
@@ -50,6 +50,18 @@ SELECT
     location_id,
     manager_id
 FROM departments;
+
+-- === DEPARTMENT_DIM ETL add dummy record ===
+INSERT INTO DEPARTMENT_DIM (
+    SURROGATE_DEPARTMENT_ID,
+    DEPARTMENT_ID,
+    DEPARTMENT_NAME,
+    LOCATION_ID,
+    MANAGER_ID
+    )
+VALUES (
+    ORA_HASH(-1 || 'Unknown Department' || -1 || -1),
+     -1, 'Unknown Department', -1, -1);
 
 -- === JOB_DIM ETL ===
 INSERT INTO job_dim (

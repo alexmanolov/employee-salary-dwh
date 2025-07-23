@@ -1,249 +1,145 @@
--- SCD Type 2 implementation
+-- Update to simulate a salary increase for an employee
+UPDATE employees
+SET salary = salary + 1000
+WHERE employee_id = 101;
 
--- === 0. Initial population: set default SCD2 values on existing dim rows ===
-UPDATE employee_dim
-   SET effective_start_date = hire_date,
-       effective_end_date   = NULL,
-       is_current           = 'Y'
- WHERE effective_start_date IS NULL;
+-- Update to simulate a department change for an employee
+UPDATE employees
+SET department_id = 60
+WHERE employee_id = 103;
 
-UPDATE department_dim
-   SET effective_start_date = SYSDATE,
-       effective_end_date   = NULL,
-       is_current           = 'Y'
- WHERE effective_start_date IS NULL;
+-- Update to simulate a job change for an employee
+UPDATE employees
+SET job_id = 'SA_REP'
+WHERE employee_id = 110;
 
-UPDATE job_dim
-   SET effective_start_date = SYSDATE,
-       effective_end_date   = NULL,
-       is_current           = 'Y'
- WHERE effective_start_date IS NULL;
+-- Update to standardize email format
+UPDATE employees
+SET email = CONCAT(email, '@oracle_NEW.com')
+WHERE employee_id = 104;
 
-UPDATE location_dim
-   SET effective_start_date = SYSDATE,
-       effective_end_date   = NULL,
-       is_current           = 'Y'
- WHERE effective_start_date IS NULL;
 
-COMMIT;
+-- Update to simulate department name change
+UPDATE departments
+SET department_name = 'Global Marketing'
+WHERE department_id = 20;
 
--- === 1. Add unique indexes on (natural key, is_current) to speed MERGE ===
-CREATE UNIQUE INDEX idx_emp_dim_key_current 
-  ON employee_dim(employee_id, is_current);
+-- Update to simulate department manager change
+UPDATE departments
+SET manager_id = 102
+WHERE department_id = 40;
 
-CREATE UNIQUE INDEX idx_dept_dim_key_current 
-  ON department_dim(department_id, is_current);
+-- Update to simulate department relocation
+UPDATE departments
+SET location_id = 1900
+WHERE department_id = 50;
 
-CREATE UNIQUE INDEX idx_job_dim_key_current 
-  ON job_dim(job_id, is_current);
+-- Update to simulate adding a new manager to a department
+UPDATE departments
+SET manager_id = 105
+WHERE department_id = 60;
 
-CREATE UNIQUE INDEX idx_loc_dim_key_current 
-  ON location_dim(location_id, is_current);
 
--- === 2. ALTER DIMENSION TABLES (SCD2 columns) ===
-ALTER TABLE employee_dim ADD (
-    effective_start_date DATE,
-    effective_end_date   DATE,
-    is_current           CHAR(1)
-);
+-- Update to simulate job title change
+UPDATE jobs
+SET job_title = 'Senior Sales Representative'
+WHERE job_id = 'SA_REP';
 
-ALTER TABLE department_dim ADD (
-    effective_start_date DATE,
-    effective_end_date   DATE,
-    is_current           CHAR(1)
-);
+-- Update to simulate change in minimum salary for a job
+UPDATE jobs
+SET min_salary = 5000
+WHERE job_id = 'IT_PROG';
 
-ALTER TABLE job_dim ADD (
-    effective_start_date DATE,
-    effective_end_date   DATE,
-    is_current           CHAR(1)
-);
+-- Update to simulate change in maximum salary for a job
+UPDATE jobs
+SET max_salary = 30000
+WHERE job_id = 'FI_ACCOUNT';
 
-ALTER TABLE location_dim ADD (
-    effective_start_date DATE,
-    effective_end_date   DATE,
-    is_current           CHAR(1)
-);
+-- Update to simulate job title reclassification
+UPDATE jobs
+SET job_title = 'Sales Vice President'
+WHERE job_id = 'SA_MAN';
 
--- === 3. CREATE STAGING TABLES ===
-CREATE TABLE employee_dim_staging AS SELECT * FROM employee_dim WHERE 1=0;
-CREATE TABLE department_dim_staging AS SELECT * FROM department_dim WHERE 1=0;
-CREATE TABLE job_dim_staging AS SELECT * FROM job_dim WHERE 1=0;
-CREATE TABLE location_dim_staging AS SELECT * FROM location_dim WHERE 1=0;
 
--- === 4. MERGE and TRUNCATE loops ===
 
--- EMPLOYEE_DIM
-MERGE INTO employee_dim d
-USING employee_dim_staging s
-  ON (d.employee_id = s.employee_id AND d.is_current = 'Y')
-WHEN MATCHED THEN 
-  UPDATE SET 
-    d.effective_end_date = SYSDATE,
-    d.is_current = 'N'
-  WHERE 
-    d.full_name != s.full_name OR
-    d.job_id != s.job_id OR
-    d.salary != s.salary OR
-    d.email != s.email OR
-    d.phone_number != s.phone_number OR
-    d.manager_id != s.manager_id OR
-    d.department_id != s.department_id OR
-    d.tenure_band != s.tenure_band
-WHEN NOT MATCHED THEN
-  INSERT (
-    surrogate_employee_id,
-    employee_id,
-    full_name,
-    hire_date,
-    job_id,
-    salary,
-    commission_pct,
-    email,
-    phone_number,
-    manager_id,
-    department_id,
-    tenure_band,
-    effective_start_date,
-    effective_end_date,
-    is_current
-  )
-  VALUES (
-    s.surrogate_employee_id,
-    s.employee_id,
-    s.full_name,
-    s.hire_date,
-    s.job_id,
-    s.salary,
-    s.commission_pct,
-    s.email,
-    s.phone_number,
-    s.manager_id,
-    s.department_id,
-    s.tenure_band,
-    SYSDATE, NULL, 'Y'
-  );
+-- Update to simulate location city change
+UPDATE locations
+SET city = 'New York'
+WHERE location_id = 1700;
 
-TRUNCATE TABLE employee_dim_staging;
+-- Update to simulate state or province change
+UPDATE locations
+SET state_province = 'California'
+WHERE location_id = 1500;
 
--- DEPARTMENT_DIM
-MERGE INTO department_dim d
-USING department_dim_staging s
-  ON (d.department_id = s.department_id AND d.is_current = 'Y')
-WHEN MATCHED THEN 
-  UPDATE SET 
-    d.effective_end_date = SYSDATE,
-    d.is_current = 'N'
-  WHERE 
-    d.department_name != s.department_name OR
-    d.location_id != s.location_id OR
-    d.manager_id != s.manager_id
-WHEN NOT MATCHED THEN
-  INSERT (
-    surrogate_department_id,
-    department_id,
-    department_name,
-    location_id,
-    manager_id,
-    effective_start_date,
-    effective_end_date,
-    is_current
-  )
-  VALUES (
-    s.surrogate_department_id,
-    s.department_id,
-    s.department_name,
-    s.location_id,
-    s.manager_id,
-    SYSDATE, NULL, 'Y'
-  );
+-- Update to simulate country change for a location
+UPDATE locations
+SET country_id = 'UK'
+WHERE location_id = 2400;
 
-TRUNCATE TABLE department_dim_staging;
+-- Update to simulate postal code standardization
+UPDATE locations
+SET postal_code = '10001'
+WHERE location_id = 1800;
 
--- JOB_DIM
-MERGE INTO job_dim d
-USING job_dim_staging s
-  ON (d.job_id = s.job_id AND d.is_current = 'Y')
-WHEN MATCHED THEN 
-  UPDATE SET 
-    d.effective_end_date = SYSDATE,
-    d.is_current = 'N'
-  WHERE 
-    d.job_title != s.job_title OR
-    d.min_salary != s.min_salary OR
-    d.max_salary != s.max_salary OR
-    d.job_category != s.job_category
-WHEN NOT MATCHED THEN
-  INSERT (
-    surrogate_job_id,
-    job_id,
-    job_title,
-    min_salary,
-    max_salary,
-    job_category,
-    effective_start_date,
-    effective_end_date,
-    is_current
-  )
-  VALUES (
-    s.surrogate_job_id,
-    s.job_id,
-    s.job_title,
-    s.min_salary,
-    s.max_salary,
-    s.job_category,
-    SYSDATE, NULL, 'Y'
-  );
 
-TRUNCATE TABLE job_dim_staging;
+UPDATE EMPLOYEES
+SET SALARY = SALARY * 1.05  -- Increase salary by 5%
+WHERE HIRE_DATE <= TO_DATE('31-DEC-2008', 'DD-MON-YYYY');
 
--- LOCATION_DIM
-MERGE INTO location_dim d
-USING location_dim_staging s
-  ON (d.location_id = s.location_id AND d.is_current = 'Y')
-WHEN MATCHED THEN 
-  UPDATE SET 
-    d.effective_end_date = SYSDATE,
-    d.is_current = 'N'
-  WHERE 
-    d.street_address != s.street_address OR
-    d.postal_code != s.postal_code OR
-    d.city != s.city OR
-    d.state_province != s.state_province OR
-    d.country_id != s.country_id OR
-    d.country_name != s.country_name OR
-    d.region_id != s.region_id OR
-    d.region_name != s.region_name
-WHEN NOT MATCHED THEN
-  INSERT (
-    surrogate_location_id,
-    location_id,
-    street_address,
-    postal_code,
-    city,
-    state_province,
-    country_id,
-    country_name,
-    region_id,
-    region_name,
-    effective_start_date,
-    effective_end_date,
-    is_current
-  )
-  VALUES (
-    s.surrogate_location_id,
-    s.location_id,
-    s.street_address,
-    s.postal_code,
-    s.city,
-    s.state_province,
-    s.country_id,
-    s.country_name,
-    s.region_id,
-    s.region_name,
-    SYSDATE, NULL, 'Y'
-  );
+UPDATE EMPLOYEES
+SET COMMISSION_PCT = CASE
+    WHEN JOB_ID IN ('SA_MAN', 'SA_REP') THEN 0.10  -- 10% commission
+    ELSE NULL
+END
+WHERE HIRE_DATE <= TO_DATE('31-DEC-2005', 'DD-MON-YYYY');
 
-TRUNCATE TABLE location_dim_staging;
 
-COMMIT;
+-- Example: Employee 101 moved from department 10 to 20 in 2010
+INSERT INTO JOB_HISTORY (EMPLOYEE_ID, START_DATE, END_DATE, JOB_ID, DEPARTMENT_ID)
+VALUES (1001, TO_DATE('01-JAN-2005', 'DD-MON-YYYY'), TO_DATE('31-DEC-2009', 'DD-MON-YYYY'), 'IT_PROG', 10);
+
+-- Update EMPLOYEES to reflect current department after the change
+UPDATE EMPLOYEES
+SET DEPARTMENT_ID = 20
+WHERE EMPLOYEE_ID = 101;
+
+---- more updates
+INSERT INTO JOB_HISTORY (EMPLOYEE_ID, START_DATE, END_DATE, JOB_ID, DEPARTMENT_ID)
+VALUES (1002, TO_DATE('01-JAN-2008', 'DD-MON-YYYY'), TO_DATE('31-DEC-2011', 'DD-MON-YYYY'), 'MK_REP', 20);
+
+UPDATE EMPLOYEES
+SET DEPARTMENT_ID = 30
+WHERE EMPLOYEE_ID = 102;
+
+
+UPDATE EMPLOYEES
+SET SALARY = SALARY + 15000
+WHERE EMPLOYEE_ID IN (100, 101, 110, 111, 112);
+
+UPDATE EMPLOYEES
+SET SALARY = SALARY + 12000
+WHERE EMPLOYEE_ID IN (102, 113, 114, 115, 116);
+
+UPDATE EMPLOYEES
+SET SALARY = SALARY + 10000
+WHERE EMPLOYEE_ID IN (103, 117, 118, 119, 120);
+
+
+
+INSERT INTO EMPLOYEES (EMPLOYEE_ID, FIRST_NAME, LAST_NAME, EMAIL, PHONE_NUMBER, HIRE_DATE, JOB_ID, SALARY, COMMISSION_PCT, MANAGER_ID, DEPARTMENT_ID)
+VALUES (1100, 'Alice', 'Johnson', 'AJOHNSON', '515.123.4567', TO_DATE('15-FEB-2015', 'DD-MON-YYYY'), 'FI_ACCOUNT', 75000, NULL, 100, 10);
+
+INSERT INTO EMPLOYEES (EMPLOYEE_ID, FIRST_NAME, LAST_NAME, EMAIL, PHONE_NUMBER, HIRE_DATE, JOB_ID, SALARY, COMMISSION_PCT, MANAGER_ID, DEPARTMENT_ID)
+VALUES (1110, 'Bob', 'Lee', 'BLEE', '515.123.4568', TO_DATE('20-MAR-2016', 'DD-MON-YYYY'), 'FI_ACCOUNT', 72000, NULL, 100, 10);
+
+INSERT INTO EMPLOYEES (EMPLOYEE_ID, FIRST_NAME, LAST_NAME, EMAIL, PHONE_NUMBER, HIRE_DATE, JOB_ID, SALARY, COMMISSION_PCT, MANAGER_ID, DEPARTMENT_ID)
+VALUES (1120, 'Carol', 'King', 'CKING', '515.123.4569', TO_DATE('10-APR-2017', 'DD-MON-YYYY'), 'FI_ACCOUNT', 70000, NULL, 100, 10);
+
+-- Similar inserts for Departments 20 and 30
+-- Department 20 new employees
+INSERT INTO EMPLOYEES (EMPLOYEE_ID, FIRST_NAME, LAST_NAME, EMAIL, PHONE_NUMBER, HIRE_DATE, JOB_ID, SALARY, COMMISSION_PCT, MANAGER_ID, DEPARTMENT_ID)
+VALUES (1130, 'David', 'Brown', 'DBROWN', '515.123.4570', TO_DATE('05-MAY-2015', 'DD-MON-YYYY'), 'SA_REP', 68000, NULL, 102, 20);
+    
+
+commit;
