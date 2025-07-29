@@ -37,12 +37,6 @@ LEFT JOIN location_dim ld ON dd.location_id = ld.location_id
 LEFT JOIN time_dim td ON td.YEAR BETWEEN EXTRACT(YEAR FROM SYSDATE) - 15 AND EXTRACT(YEAR FROM SYSDATE)-1
 WHERE
     ed.surrogate_employee_id IS NOT NULL
-    -- AND dd.surrogate_department_id IS NOT NULL
-    AND jd.surrogate_job_id IS NOT NULL
-    AND td.surrogate_time_id IS NOT NULL
-    -- AND ld.surrogate_location_id IS NOT NULL
-    -- AND e.department_id IS NOT NULL  
-    -- exclude the employee with NULL department_id - employee_id 178
     AND td.YEAR >= EXTRACT(YEAR FROM ed.HIRE_DATE)   -- Exclude dates before hiring
     AND td.MONTH = 12 AND td.DAY = 31                -- Only one row per year, at the end of the year, 31st Dec
 ;
